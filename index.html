@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Growth Hub - Marketing Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #6e02d3;
+            --brand-secondary: #6e61d4;
+            --brand-text: #303030;
+            --brand-light-gray: #f4f4f4;
+        }
+        body {
+            font-family: 'Inter', 'Roboto', sans-serif;
+            background-color: var(--brand-light-gray);
+            color: var(--brand-text);
+        }
+        .scorecard {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: white;
+            padding: 1rem;
+        }
+        .benchmark-card {
+            background-color: #f0eefc;
+            border-left: 4px solid var(--brand-secondary);
+        }
+        .scorecard-title {
+            color: #5f6368;
+            font-size: 0.875rem;
+        }
+        .scorecard-value {
+            color: var(--brand-text);
+            font-size: 1.75rem;
+        }
+        .benchmark-value {
+             color: var(--brand-secondary);
+             font-size: 1.25rem;
+        }
+        .scorecard-comparison {
+            font-size: 0.875rem;
+        }
+        .table-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dadce0;
+        }
+        .table-header th {
+            font-weight: 500;
+            color: var(--brand-text);
+        }
+        .table-cell {
+            color: var(--brand-text);
+        }
+        .green-light { background-color: #e6f4ea; color: #137333; }
+        .red-light { background-color: #fce8e6; color: #a50e0e; }
+        .green-cell { background-color: #e6f4ea; }
+        .red-cell { background-color: #fce8e6; }
+        .next-step-textarea {
+            width: 100%;
+            height: 150px;
+            padding: 8px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background-color: #fff;
+            color: var(--brand-text);
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+        .branded-btn {
+            background-color: var(--brand-primary);
+        }
+        .branded-btn:hover {
+            background-color: #5a01b3;
+        }
+        .secondary-btn {
+            background-color: var(--brand-secondary);
+        }
+        .secondary-btn:hover {
+            background-color: #5a4db3;
+        }
+        .filter-select {
+            border: 1px solid #dadce0;
+            border-radius: 0.375rem;
+            padding: 0.5rem 2rem 0.5rem 0.75rem;
+            background-color: white;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+        .date-input {
+            border: 1px solid #dadce0;
+            border-radius: 0.375rem;
+            padding: 0.4rem;
+            background-color: white;
+            font-size: 0.875rem;
+            width: 130px;
+        }
+        
+        @media (min-width: 768px) {
+            .scorecard-value { font-size: 2.25rem; }
+            .benchmark-value { font-size: 1.5rem; }
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white; padding: 2rem; border-radius: 8px;
+            width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px;
+            border-radius: 50%; border-left-color: var(--brand-primary);
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4 md:p-6">
+
+    <div id="dashboard-content" class="max-w-screen-2xl mx-auto">
+        <header class="flex flex-col xl:flex-row justify-between items-center mb-6 gap-4 no-print">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-semibold">The Growth Hub - Marketing Dashboard</h1>
+            </div>
+            <div class="flex items-center flex-wrap justify-center gap-2 md:space-x-4 mt-4 xl:mt-0">
+                <div class="flex items-center space-x-2">
+                    <label for="objective-filter" class="text-sm font-medium text-gray-500">View:</label>
+                    <select id="objective-filter" class="filter-select text-sm">
+                        <option value="all">All Campaign Types</option>
+                        <option value="lead-gen">Lead Generation</option>
+                        <option value="sales-conversion">Sales Conversion</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2 border rounded-md p-2 bg-white">
+                    <span class="text-sm font-medium text-gray-500">Period:</span>
+                    <input type="date" id="perf-start-date" class="date-input">
+                    <span class="text-sm text-gray-500">-</span>
+                    <input type="date" id="perf-end-date" class="date-input">
+                </div>
+                 <div class="flex items-center space-x-2 border rounded-md p-2 bg-white">
+                    <span class="text-sm font-medium text-gray-500">Compare:</span>
+                     <input type="date" id="comp-start-date" class="date-input">
+                     <span class="text-sm text-gray-500">-</span>
+                     <input type="date" id="comp-end-date" class="date-input">
+                </div>
+                <div class="no-print">
+                    <button id="export-btn" class="branded-btn text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <span class="hidden sm:inline">Export as PDF</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div id="loading-state" class="text-center py-16">
+            <div class="spinner mx-auto"></div>
+            <p class="mt-4 text-gray-600">Fetching live data from Google Sheets...</p>
+        </div>
+        
+        <div id="main-content" class="hidden">
+            <section id="next-steps" class="mb-8">
+                <h2 class="text-lg font-semibold mb-3">Marketing Next Steps</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div><h3 class="text-md font-bold text-red-600 mb-2 p-2 bg-red-100 rounded-md">🔴 Stop Doing</h3><textarea class="next-step-textarea" placeholder="Enter campaigns or activities to pause..."></textarea></div>
+                    <div><h3 class="text-md font-bold text-yellow-600 mb-2 p-2 bg-yellow-100 rounded-md">🟠 Observe</h3><textarea class="next-step-textarea" placeholder="Enter campaigns to monitor closely..."></textarea></div>
+                    <div><h3 class="text-md font-bold text-green-600 mb-2 p-2 bg-green-100 rounded-md">🟢 Keep Doing / Double Down</h3><textarea class="next-step-textarea" placeholder="Enter successful campaigns to scale..."></textarea></div>
+                </div>
+            </section>
+
+            <section id="critical-metrics" class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Critical Metrics - Executive Summary</h2>
+                <div id="total-cost-card-container" class="mb-6">
+                    <!-- Total Cost scorecard will be injected here -->
+                </div>
+                <div id="lead-gen-summary-section" class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-3">Lead Gen Performance</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="lead-gen-summary-cards"></div>
+                    <div class="grid grid-cols-1 mt-2">
+                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry CPL:</p><p class="benchmark-value">$30 - $110</p></div>
+                    </div>
+                </div>
+                <div id="sales-conversion-summary-section">
+                    <h3 class="text-lg font-medium text-gray-600 mb-3">Sales Conversion Performance</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="sales-conversion-summary-cards"></div>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry CPA:</p><p class="benchmark-value">$533 - $791</p></div>
+                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry Conv. Rate:</p><p class="benchmark-value">2.9% - 4.6%</p></div>
+                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry ROI:</p><p class="benchmark-value">4x - 7x</p></div>
+                    </div>
+                </div>
+            </section>
+            <section id="internal-actions" class="mb-8">
+                <h2 class="text-lg font-semibold mb-3">Critical Internal Actions</h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="internal-actions-cards"></div>
+            </section>
+            
+            <div class="text-center mb-8 no-print">
+                 <button id="view-details-btn" class="secondary-btn text-white font-semibold py-2 px-6 rounded-lg transition-colors flex items-center justify-center mx-auto">
+                    View Campaign Details
+                 </button>
+            </div>
+
+            <div id="campaign-details-container" class="hidden">
+                <section id="funnel-breakdown" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div id="lead-gen-table-section" class="bg-white p-6 rounded-lg border border-gray-200">
+                        <h2 class="text-lg font-semibold mb-1">Lead Generation Funnel Performance</h2>
+                        <div class="overflow-x-auto border rounded-md"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th></tr></thead><tbody id="lead-gen-table-body"></tbody></table></div>
+                    </div>
+                    <div id="sales-conversion-table-section" class="bg-white p-6 rounded-lg border border-gray-200">
+                        <h2 class="text-lg font-semibold mb-1">Sales Conversion Engine Performance</h2>
+                        <div class="overflow-x-auto border rounded-md"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">Value</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="sales-conversion-table-body"></tbody></table></div>
+                    </div>
+                </section>
+                <section id="deep-dive" class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h2 class="text-lg font-semibold mb-2">Full Funnel Campaign Performance</h2>
+                    <p class="text-sm text-gray-500 mb-4">Unfiltered view of all campaigns to identify "all-star" performers.</p>
+                    <div class="overflow-x-auto border rounded-md">
+                        <table id="full-funnel-table" class="min-w-full text-sm whitespace-nowrap"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Campaign Objective</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th><th class="p-3 text-right">Lead to Conv. Rate</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">Conv. Value</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="full-funnel-table-body"></tbody></table>
+                    </div>
+                </section>
+            </div>
+
+            <section id="ai-insights" class="mt-8 bg-white p-6 rounded-lg border border-gray-200 text-center no-print">
+                 <h2 class="text-lg font-semibold mb-2">AI-Powered Insights</h2>
+                 <p class="text-sm text-gray-500 mb-4">Click the button below to generate a strategic summary for the selected period using Gemini.</p>
+                 <button id="generate-insights-btn" class="branded-btn text-white font-semibold py-2 px-6 rounded-lg transition-colors flex items-center justify-center mx-auto">
+                    ✨ Generate Performance Summary
+                 </button>
+            </section>
+        </div>
+         <footer id="footer-notice" class="text-center py-8 border-t border-gray-200 mt-8">
+            <div class="flex justify-center items-center space-x-3 mb-4">
+                <img src="https://seesharpgroup.com.au/wp-content/themes/yootheme/cache/ef/ss-logo-color-efbbcc70.png" alt="SeeSharp Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='SeeSharpLogo_ICON_Instagram.png';">
+                <p class="text-sm text-gray-600 font-semibold">Prepared by SeeSharp Group</p>
+            </div>
+            <p class="text-xs text-gray-500 font-semibold">CONFIDENTIAL - FOR INTERNAL AND CLIENT REVIEW ONLY. NOT FOR WIDER DISTRIBUTION.</p>
+            <p class="text-xs text-gray-400 mt-1">Report Generated on <span id="generationDate"></span></p>
+        </footer>
+    </div>
+
+    <!-- AI Insights Modal -->
+    <div id="ai-insights-modal" class="modal-overlay hidden">
+        <div class="modal-content"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-semibold">✨ AI-Powered Performance Summary</h2><button id="close-modal-btn" class="text-gray-500 hover:text-gray-800">&times;</button></div><div id="modal-body"><div id="spinner-container" class="flex justify-center items-center h-48"><div class="spinner"></div></div><div id="insights-content" class="text-gray-700 space-y-4 hidden"></div></div></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const SHEET_ID = '1W1WNsvgk8otPmX3G6QrkBICcyZy8Xky4e1KkbngKSzc';
+            const MARKETING_SHEET_NAME = 'Marketing Activities';
+            const ACTIONS_SHEET_NAME = 'Internal Actions to Track';
+            const loadingState = document.getElementById('loading-state');
+            const mainContent = document.getElementById('main-content');
+            
+            function csvToJSON(csv) {
+                const lines = csv.split('\n');
+                const result = [];
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                for (let i = 1; i < lines.length; i++) {
+                    const obj = {};
+                    const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (currentline.length === headers.length) {
+                        headers.forEach((header, j) => {
+                            obj[header] = currentline[j].trim().replace(/"/g, '');
+                        });
+                        result.push(obj);
+                    }
+                }
+                return result;
+            }
+
+            async function fetchSheetData(sheetName) {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Error fetching sheet: ${sheetName}`);
+                    const csvText = await response.text();
+                    return csvToJSON(csvText);
+                } catch (error) {
+                    console.error(error);
+                    loadingState.innerHTML = `<p class="text-red-500">Failed to load data from Google Sheet. Please ensure the sheet is public and the name is correct.</p>`;
+                    return [];
+                }
+            }
+            
+            function getWeekDateRange(date, weekOffset = 0) {
+                const d = new Date(date);
+                d.setDate(d.getDate() + (weekOffset * 7));
+                const day = d.getDay(); 
+                const diff = d.getDate() - day;
+                const sundayStart = new Date(d.setDate(diff));
+                sundayStart.setHours(0, 0, 0, 0);
+                const saturdayEnd = new Date(new Date(sundayStart).setDate(sundayStart.getDate() + 6));
+                saturdayEnd.setHours(23, 59, 59, 999);
+                return { start: sundayStart, end: saturdayEnd };
+            }
+
+            function formatDateForInput(date) {
+                return date.toISOString().split('T')[0];
+            }
+
+            function createScorecard(title, value, comparison, isGood, objective = '') {
+                let comparisonColor = 'text-gray-500';
+                 if (comparison.includes('▲')) {
+                    comparisonColor = title.toLowerCase().includes('cost') ? 'text-red-700' : 'text-green-700';
+                } else if (comparison.includes('▼')) {
+                     comparisonColor = title.toLowerCase().includes('cost') ? 'text-green-700' : 'text-red-700';
+                }
+                const cardColor = isGood === true ? 'green-light' : isGood === false ? 'red-light' : '';
+                return `<div class="scorecard ${cardColor}" data-objective="${objective}"><p class="scorecard-title">${title}</p><p class="scorecard-value">${value}</p><p class="scorecard-comparison ${comparisonColor}">${comparison}</p></div>`;
+            }
+
+            function updateDashboard(data) {
+                const BENCHMARKS = { CPL: 110, CPA: 791, LTR: 0.029, ROI: 4 };
+                const leadGenCost = data.leadGen.cost;
+                const leadGenLeads = data.leadGen.leads;
+                const leadGenCPL = leadGenLeads > 0 ? (leadGenCost / leadGenLeads) : 0;
+                const salesCost = data.sales.cost;
+                const salesConversions = data.sales.conversions;
+                const salesValue = data.sales.conversionValue;
+                const salesCPA = salesConversions > 0 ? (salesCost / salesConversions) : 0;
+                const salesROI = salesCost > 0 ? (salesValue - salesCost) / salesCost : 0;
+                const totalLeadsThisPeriod = data.leadGen.leads + data.sales.leads;
+                const leadToConversionRate = totalLeadsThisPeriod > 0 ? salesConversions / totalLeadsThisPeriod : 0;
+                const totalCost = leadGenCost + salesCost;
+                const prevTotalCost = data.prevLeadGen.cost + data.prevSales.cost;
+
+                const getComparison = (current, previous) => {
+                    if (previous === null || previous === undefined) return 'No comparison data';
+                    if (current === previous && current !== 0) return 'No change';
+                    if (previous === 0 && current > 0) return '▲ ∞%';
+                    if (previous > 0 && current === 0) return '▼ 100%';
+                    if (previous === 0 && current === 0) return 'No change';
+                    const change = ((current - previous) / previous) * 100;
+                    const arrow = change >= 0 ? '▲' : '▼';
+                    return `${arrow} ${Math.abs(change).toFixed(0)}%`;
+                };
+
+                document.getElementById('total-cost-card-container').innerHTML = createScorecard('Total Marketing Cost', `$${totalCost.toLocaleString()}`, getComparison(totalCost, prevTotalCost));
+                document.getElementById('lead-gen-summary-cards').innerHTML = `${createScorecard('Cost', `$${leadGenCost.toLocaleString()}`, getComparison(data.leadGen.cost, data.prevLeadGen.cost))}${createScorecard('No. of Leads', leadGenLeads.toLocaleString(), getComparison(data.leadGen.leads, data.prevLeadGen.leads))}${createScorecard('Cost per Lead (CPL)', `$${leadGenCPL.toFixed(2)}`, getComparison(leadGenCPL, data.prevLeadGen.cpl), leadGenCPL <= BENCHMARKS.CPL)}`;
+                document.getElementById('sales-conversion-summary-cards').innerHTML = `${createScorecard('Cost', `$${salesCost.toLocaleString()}`, getComparison(data.sales.cost, data.prevSales.cost))}${createScorecard('No. of Conversions', salesConversions.toLocaleString(), getComparison(data.sales.conversions, data.prevSales.conversions))}${createScorecard('Total Conversion Value', `$${salesValue.toLocaleString()}`, getComparison(salesValue, data.prevSales.conversionValue))}${createScorecard('Lead to Conversion Rate', `${(leadToConversionRate * 100).toFixed(1)}%`, getComparison(leadToConversionRate, data.prevLtr), leadToConversionRate >= BENCHMARKS.LTR)}${createScorecard('Cost per Conversion (CPA)', `$${salesCPA.toFixed(2)}`, getComparison(salesCPA, data.prevSales.cpa), salesCPA <= BENCHMARKS.CPA)}${createScorecard('ROI', `${salesROI.toFixed(1)}x`, getComparison(salesROI, data.prevSales.roi), salesROI >= BENCHMARKS.ROI)}`;
+                document.getElementById('internal-actions-cards').innerHTML = data.internalActions.map(action => createScorecard(action.name, action.value, getComparison(action.value, action.prevValue), undefined, action.objective)).join('');
+                
+                const populateTable = (tbodyId, data, columns) => {
+                    const tbody = document.getElementById(tbodyId);
+                    tbody.innerHTML = data.map(row => `<tr class="border-b">${columns.map(col => `<td class="p-3 table-cell ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClass ? col.cellClass(row) : ''}">${col.render(row)}</td>`).join('')}</tr>`).join('');
+                };
+
+                populateTable('lead-gen-table-body', data.leadGen.campaigns, [{ render: r => r['Campaign Name'] },{ render: r => r['Channel'] },{ render: r => `$${r.Cost.toLocaleString()}`, align: 'right' },{ render: r => r['No. of Leads'], align: 'right' },{ render: r => `$${r.CPL.toFixed(2)}`, align: 'right', cellClass: r => r.CPL <= BENCHMARKS.CPL ? 'green-cell' : 'red-cell' }]);
+                populateTable('sales-conversion-table-body', data.sales.campaigns, [{ render: r => r['Campaign Name'] },{ render: r => r['Channel'] },{ render: r => `$${r.Cost.toLocaleString()}`, align: 'right' },{ render: r => r['No. of Conversions'], align: 'right' },{ render: r => `$${r['Total Conversions Values'].toLocaleString()}`, align: 'right' },{ render: r => `$${r.CPA.toFixed(2)}`, align: 'right', cellClass: r => r.CPA <= BENCHMARKS.CPA ? 'green-cell' : 'red-cell' },{ render: r => `${r.ROI.toFixed(1)}x`, align: 'right', cellClass: r => r.ROI >= BENCHMARKS.ROI ? 'green-cell' : 'red-cell' }]);
+                populateTable('full-funnel-table-body', data.allCampaigns, [{ render: r => r['Campaign Name'] },{ render: r => r['Campaign Objective'] },{ render: r => r['Channel'] },{ render: r => `$${r.Cost.toLocaleString()}`, align: 'right' },{ render: r => r['No. of Leads'], align: 'right' },{ render: r => `$${r.CPL.toFixed(2)}`, align: 'right', cellClass: r => r.CPL <= BENCHMARKS.CPL ? 'green-cell' : 'red-cell' },{ render: r => `${(r.LTR * 100).toFixed(1)}%`, align: 'right', cellClass: r => r.LTR >= BENCHMARKS.LTR ? 'green-cell' : 'red-cell' },{ render: r => r['No. of Conversions'], align: 'right' },{ render: r => isNaN(r.CPA) || r.CPA === 0 ? 'N/A' : `$${r.CPA.toFixed(2)}`, align: 'right', cellClass: r => isNaN(r.CPA) || r.CPA === 0 ? '' : (r.CPA <= BENCHMARKS.CPA ? 'green-cell' : 'red-cell') },{ render: r => `$${r['Total Conversions Values'].toLocaleString()}`, align: 'right' },{ render: r => `${r.ROI.toFixed(1)}x`, align: 'right', cellClass: r => r.ROI >= BENCHMARKS.ROI ? 'green-cell' : 'red-cell' }]);
+            }
+
+            async function initialize() {
+                document.getElementById('generationDate').textContent = new Date().toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
+                const [marketingData, actionsData] = await Promise.all([ fetchSheetData(MARKETING_SHEET_NAME), fetchSheetData(ACTIONS_SHEET_NAME) ]);
+                if (marketingData.length === 0 || actionsData.length === 0) {
+                     loadingState.innerHTML = `<p class="text-red-500">No data found in one or more Google Sheets. Please check the sheet names and public access permissions.</p>`;
+                     return;
+                }
+
+                function runUpdate() {
+                    const perfPeriod = { start: new Date(document.getElementById('perf-start-date').value + 'T00:00:00'), end: new Date(document.getElementById('perf-end-date').value + 'T23:59:59') };
+                    const compPeriod = { start: new Date(document.getElementById('comp-start-date').value + 'T00:00:00'), end: new Date(document.getElementById('comp-end-date').value + 'T23:59:59') };
+                    const processMarketingForPeriod = (data, period) => {
+                        const cleanData = data.map(row => ({...row, Cost: parseFloat(row.Cost?.replace(/[^0-9.-]+/g,"")) || 0, 'No. of Leads': parseInt(row['No. of Leads']) || 0, 'No. of Conversions': parseInt(row['No. of Conversions']) || 0, 'Total Conversions Values': parseFloat(row['Total Conversions Values']?.replace(/[^0-9.-]+/g,"")) || 0, WeekDate: new Date(row.Week) })).filter(r => r.WeekDate && !isNaN(r.WeekDate));
+                        const periodData = cleanData.filter(r => r.WeekDate >= period.start && r.WeekDate <= period.end);
+                        const aggregateCampaigns = (filteredData, objective) => {
+                            const campaigns = objective ? filteredData.filter(c => c['Campaign Objective'] === objective) : filteredData;
+                            const enrichedCampaigns = campaigns.map(c => ({...c, CPL: (c['No. of Leads'] > 0 ? c.Cost / c['No. of Leads'] : 0), CPA: (c['No. of Conversions'] > 0 ? c.Cost / c['No. of Conversions'] : 0), LTR: (c['No. of Leads'] > 0 ? c['No. of Conversions'] / c['No. of Leads'] : 0), ROI: (c.Cost > 0 ? (c['Total Conversions Values'] - c.Cost) / c.Cost : 0) }));
+                            return { cost: enrichedCampaigns.reduce((sum, r) => sum + r.Cost, 0), leads: enrichedCampaigns.reduce((sum, r) => sum + r['No. of Leads'], 0), conversions: enrichedCampaigns.reduce((sum, r) => sum + r['No. of Conversions'], 0), conversionValue: enrichedCampaigns.reduce((sum, r) => sum + r['Total Conversions Values'], 0), campaigns: enrichedCampaigns };
+                        };
+                        const leadGen = aggregateCampaigns(periodData, 'Lead Generation');
+                        const sales = aggregateCampaigns(periodData, 'Sales Conversion');
+                        const allLeads = leadGen.leads + sales.leads;
+                        return { leadGen: {...leadGen, cpl: leadGen.leads > 0 ? leadGen.cost/leadGen.leads : 0}, sales: {...sales, cpa: sales.conversions > 0 ? sales.cost/sales.conversions : 0, roi: sales.cost > 0 ? (sales.conversionValue - sales.cost)/sales.cost : 0}, ltr: allLeads > 0 ? sales.conversions / allLeads : 0, allCampaigns: aggregateCampaigns(periodData).campaigns };
+                    };
+                    const processActionsForPeriod = (allActionData, period) => {
+                        const cleanActions = allActionData.map(r => ({...r, 'Total Number': parseInt(r['Total Number']) || 0, WeekDate: new Date(r.Week)})).filter(r => r.WeekDate && !isNaN(r.WeekDate));
+                        const uniqueActionNames = [...new Set(cleanActions.map(item => item['Critical Action']))].filter(Boolean);
+                        const periodActions = cleanActions.filter(r => r.WeekDate >= period.start && r.WeekDate <= period.end);
+                        return uniqueActionNames.map(name => {
+                            const actions = periodActions.filter(a => a['Critical Action'] === name);
+                            return { name: name, objective: actions.length > 0 ? actions[0]['Type'] : 'General', value: actions.reduce((sum, a) => sum + a['Total Number'], 0) };
+                        });
+                    };
+                    const perfMarketing = processMarketingForPeriod(marketingData, perfPeriod);
+                    const compMarketing = processMarketingForPeriod(marketingData, compPeriod);
+                    const perfActions = processActionsForPeriod(actionsData, perfPeriod);
+                    const compActions = processActionsForPeriod(actionsData, compPeriod);
+                    const finalData = { ...perfMarketing, prevLeadGen: compMarketing.leadGen, prevSales: compMarketing.sales, prevLtr: compMarketing.ltr, internalActions: perfActions.map(action => ({...action, prevValue: compActions.find(p => p.name === action.name)?.value || 0 })) };
+                    updateDashboard(finalData);
+                }
+
+                const lastWeek = getWeekDateRange(new Date(), -1);
+                const weekBeforeLast = getWeekDateRange(new Date(), -2);
+                document.getElementById('perf-start-date').value = formatDateForInput(lastWeek.start);
+                document.getElementById('perf-end-date').value = formatDateForInput(lastWeek.end);
+                document.getElementById('comp-start-date').value = formatDateForInput(weekBeforeLast.start);
+                document.getElementById('comp-end-date').value = formatDateForInput(weekBeforeLast.end);
+                runUpdate();
+                loadingState.style.display = 'none';
+                mainContent.style.display = 'block';
+
+                ['perf-start-date', 'perf-end-date', 'comp-start-date', 'comp-end-date', 'objective-filter'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', runUpdate);
+                });
+                
+                const objectiveFilter = document.getElementById('objective-filter');
+                const detailsContainer = document.getElementById('campaign-details-container');
+                const viewDetailsBtn = document.getElementById('view-details-btn');
+
+                objectiveFilter.addEventListener('change', (e) => {
+                    const selection = e.target.value;
+                    const totalCostContainer = document.getElementById('total-cost-card-container');
+                    const leadGenSummary = document.getElementById('lead-gen-summary-section');
+                    const salesSummary = document.getElementById('sales-conversion-summary-section');
+                    const leadGenTable = document.getElementById('lead-gen-table-section');
+                    const salesTable = document.getElementById('sales-conversion-table-section');
+                    const deepDiveTable = document.getElementById('deep-dive');
+                    const internalActionsContainer = document.getElementById('internal-actions-cards');
+                    const showAll = selection === 'all', showLeadGen = selection === 'lead-gen', showSales = selection === 'sales-conversion';
+                    
+                    if(totalCostContainer) totalCostContainer.style.display = showAll ? 'block' : 'none';
+                    if(leadGenSummary) leadGenSummary.style.display = (showAll || showLeadGen) ? 'block' : 'none';
+                    if(salesSummary) salesSummary.style.display = (showAll || showSales) ? 'block' : 'none';
+                    if(leadGenTable) leadGenTable.style.display = (showAll || showLeadGen) ? 'block' : 'none';
+                    if(salesTable) salesTable.style.display = (showAll || showSales) ? 'block' : 'none';
+                    if(deepDiveTable) deepDiveTable.style.display = showAll ? 'block' : 'none';
+                    
+                    Array.from(internalActionsContainer.children).forEach(card => {
+                        const objective = card.dataset.objective;
+                        if (showAll || (showLeadGen && objective === 'Lead Generation') || (showSales && objective === 'Sales Conversion')) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+                
+                viewDetailsBtn.addEventListener('click', () => {
+                    const isHidden = detailsContainer.classList.toggle('hidden');
+                    viewDetailsBtn.textContent = isHidden ? 'View Campaign Details' : 'Hide Campaign Details';
+                    if (!isHidden) {
+                        objectiveFilter.dispatchEvent(new Event('change'));
+                    }
+                });
+            
+                const insightBtn = document.getElementById('generate-insights-btn');
+                const modal = document.getElementById('ai-insights-modal');
+                const closeModalBtn = document.getElementById('close-modal-btn');
+                insightBtn.addEventListener('click', generateInsights);
+                closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+                modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); } });
+
+                document.getElementById('export-btn').addEventListener('click', () => window.print());
+
+                async function generateInsights() {
+                    modal.classList.remove('hidden');
+                    document.getElementById('spinner-container').style.display = 'flex';
+                    document.getElementById('insights-content').style.display = 'none';
+                    document.getElementById('insights-content').innerHTML = '';
+                    const table = document.getElementById('full-funnel-table');
+                    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+                    const rows = Array.from(table.querySelectorAll('tbody tr'));
+                    const data = rows.map(row => {
+                        const cells = Array.from(row.querySelectorAll('td'));
+                        let rowData = {};
+                        headers.forEach((header, i) => { rowData[header] = cells[i].textContent.trim(); });
+                        return rowData;
+                    });
+                    const prompt = `
+                        As a Chief Marketing Officer, analyze the following marketing performance data for "The Growth Hub" for the selected period.
+                        The industry benchmarks to compare against are: CPL <= $110, CPA <= $791, Lead to Conversion Rate >= 2.9%, and ROI >= 4x.
+                        Data: ${JSON.stringify(data, null, 2)}
+                        Please provide a concise, strategic summary in the following format, using markdown for headings and bullet points:
+                        ### Performance Summary
+                        **Overall Assessment:** Start with a one-sentence summary of the period's performance.
+                        **Key Wins:** - List 2-3 major successes from the period. Highlight specific campaigns and metrics.
+                        **Areas for Improvement:** - List 2-3 key risks or underperforming areas. Pinpoint specific campaigns.
+                        **Actionable Recommendations:** - Provide 2-3 clear, actionable next steps.
+                    `;
+                    try {
+                        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                        const payload = { contents: chatHistory };
+                        const apiKey = ""; 
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
+                        const result = await response.json();
+                        let text = 'No content generated.';
+                        if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
+                            text = result.candidates[0].content.parts[0].text;
+                        } else { throw new Error('Unexpected API response structure.'); }
+                        document.getElementById('spinner-container').style.display = 'none';
+                        document.getElementById('insights-content').innerHTML = formatResponse(text);
+                        document.getElementById('insights-content').style.display = 'block';
+                    } catch (error) {
+                        console.error("Error generating insights:", error);
+                        document.getElementById('spinner-container').style.display = 'none';
+                        document.getElementById('insights-content').innerHTML = `<p class="text-red-600">Sorry, there was an error generating the insights. Please check the console for details.</p>`;
+                        document.getElementById('insights-content').style.display = 'block';
+                    }
+                }
+                function formatResponse(text) {
+                    return text
+                        .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+                        .replace(/\*\*(.*)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                        .replace(/^- (.*)/gm, '<li class="ml-5 list-disc">$1</li>')
+                        .replace(/(<\/li>)(<li)/g, '$1\n$2') 
+                        .replace(/(\n<li)/g, '<li')
+                        .replace(/(<h3.*<\/h3>)/g, '</ul>$1<ul>') 
+                        .replace(/^<\/ul>/, '') + '</ul>';
+                }
+            }
+            initialize();
+        });
+    </script>
+
+</body>
+</html>
