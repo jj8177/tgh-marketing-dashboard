@@ -70,6 +70,7 @@
             color: var(--brand-text);
             font-size: 0.875rem;
             resize: vertical;
+            white-space: pre-wrap;
         }
         .branded-btn {
             background-color: var(--brand-primary);
@@ -162,7 +163,7 @@
                 </div>
                 <div class="no-print">
                     <button id="export-btn" class="branded-btn text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                         <span class="hidden sm:inline">Export as PDF</span>
                     </button>
                 </div>
@@ -178,12 +179,12 @@
             <section id="next-steps" class="mb-8">
                 <h2 class="text-lg font-semibold mb-3">Marketing Next Steps</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><h3 class="text-md font-bold text-red-600 mb-2 p-2 bg-red-100 rounded-md">🔴 Stop Doing</h3><textarea class="next-step-textarea" placeholder="Enter campaigns or activities to pause..."></textarea></div>
-                    <div><h3 class="text-md font-bold text-yellow-600 mb-2 p-2 bg-yellow-100 rounded-md">🟠 Observe</h3><textarea class="next-step-textarea" placeholder="Enter campaigns to monitor closely..."></textarea></div>
-                    <div><h3 class="text-md font-bold text-green-600 mb-2 p-2 bg-green-100 rounded-md">🟢 Keep Doing / Double Down</h3><textarea class="next-step-textarea" placeholder="Enter successful campaigns to scale..."></textarea></div>
+                    <div><h3 class="text-md font-bold text-red-600 mb-2 p-2 bg-red-100 rounded-md">🔴 Stop Doing</h3><textarea id="stop-doing-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
+                    <div><h3 class="text-md font-bold text-yellow-600 mb-2 p-2 bg-yellow-100 rounded-md">🟠 Observe</h3><textarea id="observe-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
+                    <div><h3 class="text-md font-bold text-green-600 mb-2 p-2 bg-green-100 rounded-md">🟢 Keep Doing / Double Down</h3><textarea id="keep-doing-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
                 </div>
             </section>
-
+            
             <section id="critical-metrics" class="mb-8">
                 <h2 class="text-xl font-semibold mb-4">Critical Metrics - Executive Summary</h2>
                 <div id="total-cost-card-container" class="mb-6">
@@ -265,6 +266,7 @@
             const SHEET_ID = '1W1WNsvgk8otPmX3G6QrkBICcyZy8Xky4e1KkbngKSzc';
             const MARKETING_SHEET_NAME = 'Marketing Activities';
             const ACTIONS_SHEET_NAME = 'Internal Actions to Track';
+            const NEXT_STEPS_SHEET_NAME = 'Next Steps Log';
             const loadingState = document.getElementById('loading-state');
             const mainContent = document.getElementById('main-content');
             
@@ -357,6 +359,10 @@
                 document.getElementById('sales-conversion-summary-cards').innerHTML = `${createScorecard('Cost', `$${salesCost.toLocaleString()}`, getComparison(data.sales.cost, data.prevSales.cost))}${createScorecard('No. of Conversions', salesConversions.toLocaleString(), getComparison(data.sales.conversions, data.prevSales.conversions))}${createScorecard('Total Conversion Value', `$${salesValue.toLocaleString()}`, getComparison(salesValue, data.prevSales.conversionValue))}${createScorecard('Lead to Conversion Rate', `${(leadToConversionRate * 100).toFixed(1)}%`, getComparison(leadToConversionRate, data.prevLtr), leadToConversionRate >= BENCHMARKS.LTR)}${createScorecard('Cost per Conversion (CPA)', `$${salesCPA.toFixed(2)}`, getComparison(salesCPA, data.prevSales.cpa), salesCPA <= BENCHMARKS.CPA)}${createScorecard('ROI', `${salesROI.toFixed(1)}x`, getComparison(salesROI, data.prevSales.roi), salesROI >= BENCHMARKS.ROI)}`;
                 document.getElementById('internal-actions-cards').innerHTML = data.internalActions.map(action => createScorecard(action.name, action.value, getComparison(action.value, action.prevValue), undefined, action.objective)).join('');
                 
+                document.getElementById('stop-doing-textarea').value = data.nextSteps.stop;
+                document.getElementById('observe-textarea').value = data.nextSteps.observe;
+                document.getElementById('keep-doing-textarea').value = data.nextSteps.keep;
+
                 const populateTable = (tbodyId, data, columns) => {
                     const tbody = document.getElementById(tbodyId);
                     tbody.innerHTML = data.map(row => `<tr class="border-b">${columns.map(col => `<td class="p-3 table-cell ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClass ? col.cellClass(row) : ''}">${col.render(row)}</td>`).join('')}</tr>`).join('');
@@ -368,8 +374,11 @@
             }
 
             async function initialize() {
-                document.getElementById('generationDate').textContent = new Date().toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
-                const [marketingData, actionsData] = await Promise.all([ fetchSheetData(MARKETING_SHEET_NAME), fetchSheetData(ACTIONS_SHEET_NAME) ]);
+                const [marketingData, actionsData, nextStepsData] = await Promise.all([ 
+                    fetchSheetData(MARKETING_SHEET_NAME), 
+                    fetchSheetData(ACTIONS_SHEET_NAME),
+                    fetchSheetData(NEXT_STEPS_SHEET_NAME)
+                ]);
                 if (marketingData.length === 0 || actionsData.length === 0) {
                      loadingState.innerHTML = `<p class="text-red-500">No data found in one or more Google Sheets. Please check the sheet names and public access permissions.</p>`;
                      return;
@@ -400,11 +409,20 @@
                             return { name: name, objective: actions.length > 0 ? actions[0]['Type'] : 'General', value: actions.reduce((sum, a) => sum + a['Total Number'], 0) };
                         });
                     };
+                    const processNextStepsForPeriod = (allNextStepsData, period) => {
+                        const cleanData = allNextStepsData.map(r => ({...r, WeekDate: new Date(r.Week)})).filter(r => r.WeekDate && !isNaN(r.WeekDate));
+                        const periodData = cleanData.filter(r => r.WeekDate >= period.start && r.WeekDate <= period.end);
+                        const stop = periodData.map(r => r['Stop Doing']).filter(Boolean).map(n => `• ${n}`).join('\n');
+                        const observe = periodData.map(r => r['Observe']).filter(Boolean).map(n => `• ${n}`).join('\n');
+                        const keep = periodData.map(r => r['Keep Doing']).filter(Boolean).map(n => `• ${n}`).join('\n');
+                        return { 'Stop Doing': stop, 'Observe': observe, 'Keep Doing': keep };
+                    };
                     const perfMarketing = processMarketingForPeriod(marketingData, perfPeriod);
                     const compMarketing = processMarketingForPeriod(marketingData, compPeriod);
                     const perfActions = processActionsForPeriod(actionsData, perfPeriod);
                     const compActions = processActionsForPeriod(actionsData, compPeriod);
-                    const finalData = { ...perfMarketing, prevLeadGen: compMarketing.leadGen, prevSales: compMarketing.sales, prevLtr: compMarketing.ltr, internalActions: perfActions.map(action => ({...action, prevValue: compActions.find(p => p.name === action.name)?.value || 0 })) };
+                    const nextSteps = processNextStepsForPeriod(nextStepsData, perfPeriod);
+                    const finalData = { ...perfMarketing, prevLeadGen: compMarketing.leadGen, prevSales: compMarketing.sales, prevLtr: compMarketing.ltr, internalActions: perfActions.map(action => ({...action, prevValue: compActions.find(p => p.name === action.name)?.value || 0 })), nextSteps };
                     updateDashboard(finalData);
                 }
 
@@ -414,9 +432,16 @@
                 document.getElementById('perf-end-date').value = formatDateForInput(lastWeek.end);
                 document.getElementById('comp-start-date').value = formatDateForInput(weekBeforeLast.start);
                 document.getElementById('comp-end-date').value = formatDateForInput(weekBeforeLast.end);
-                runUpdate();
+                
                 loadingState.style.display = 'none';
                 mainContent.style.display = 'block';
+                
+                runUpdate(); 
+                setupEventListeners(runUpdate);
+            }
+            
+            function setupEventListeners(runUpdate) {
+                document.getElementById('generationDate').textContent = new Date().toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
 
                 ['perf-start-date', 'perf-end-date', 'comp-start-date', 'comp-end-date', 'objective-filter'].forEach(id => {
                     document.getElementById(id).addEventListener('change', runUpdate);
@@ -470,66 +495,67 @@
                 modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); } });
 
                 document.getElementById('export-btn').addEventListener('click', () => window.print());
+            }
 
-                async function generateInsights() {
-                    modal.classList.remove('hidden');
-                    document.getElementById('spinner-container').style.display = 'flex';
-                    document.getElementById('insights-content').style.display = 'none';
-                    document.getElementById('insights-content').innerHTML = '';
-                    const table = document.getElementById('full-funnel-table');
-                    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-                    const rows = Array.from(table.querySelectorAll('tbody tr'));
-                    const data = rows.map(row => {
-                        const cells = Array.from(row.querySelectorAll('td'));
-                        let rowData = {};
-                        headers.forEach((header, i) => { rowData[header] = cells[i].textContent.trim(); });
-                        return rowData;
-                    });
-                    const prompt = `
-                        As a Chief Marketing Officer, analyze the following marketing performance data for "The Growth Hub" for the selected period.
-                        The industry benchmarks to compare against are: CPL <= $110, CPA <= $791, Lead to Conversion Rate >= 2.9%, and ROI >= 4x.
-                        Data: ${JSON.stringify(data, null, 2)}
-                        Please provide a concise, strategic summary in the following format, using markdown for headings and bullet points:
-                        ### Performance Summary
-                        **Overall Assessment:** Start with a one-sentence summary of the period's performance.
-                        **Key Wins:** - List 2-3 major successes from the period. Highlight specific campaigns and metrics.
-                        **Areas for Improvement:** - List 2-3 key risks or underperforming areas. Pinpoint specific campaigns.
-                        **Actionable Recommendations:** - Provide 2-3 clear, actionable next steps.
-                    `;
-                    try {
-                        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                        const payload = { contents: chatHistory };
-                        const apiKey = ""; 
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
-                        const result = await response.json();
-                        let text = 'No content generated.';
-                        if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
-                            text = result.candidates[0].content.parts[0].text;
-                        } else { throw new Error('Unexpected API response structure.'); }
-                        document.getElementById('spinner-container').style.display = 'none';
-                        document.getElementById('insights-content').innerHTML = formatResponse(text);
-                        document.getElementById('insights-content').style.display = 'block';
-                    } catch (error) {
-                        console.error("Error generating insights:", error);
-                        document.getElementById('spinner-container').style.display = 'none';
-                        document.getElementById('insights-content').innerHTML = `<p class="text-red-600">Sorry, there was an error generating the insights. Please check the console for details.</p>`;
-                        document.getElementById('insights-content').style.display = 'block';
-                    }
-                }
-                function formatResponse(text) {
-                    return text
-                        .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-                        .replace(/\*\*(.*)\*\*/g, '<strong class="font-semibold">$1</strong>')
-                        .replace(/^- (.*)/gm, '<li class="ml-5 list-disc">$1</li>')
-                        .replace(/(<\/li>)(<li)/g, '$1\n$2') 
-                        .replace(/(\n<li)/g, '<li')
-                        .replace(/(<h3.*<\/h3>)/g, '</ul>$1<ul>') 
-                        .replace(/^<\/ul>/, '') + '</ul>';
+            initialize();
+            
+            async function generateInsights() {
+                modal.classList.remove('hidden');
+                document.getElementById('spinner-container').style.display = 'flex';
+                document.getElementById('insights-content').style.display = 'none';
+                document.getElementById('insights-content').innerHTML = '';
+                const table = document.getElementById('full-funnel-table');
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                const data = rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    let rowData = {};
+                    headers.forEach((header, i) => { rowData[header] = cells[i].textContent.trim(); });
+                    return rowData;
+                });
+                const prompt = `
+                    As a Chief Marketing Officer, analyze the following marketing performance data for "The Growth Hub" for the selected period.
+                    The industry benchmarks to compare against are: CPL <= $110, CPA <= $791, Lead to Conversion Rate >= 2.9%, and ROI >= 4x.
+                    Data: ${JSON.stringify(data, null, 2)}
+                    Please provide a concise, strategic summary in the following format, using markdown for headings and bullet points:
+                    ### Performance Summary
+                    **Overall Assessment:** Start with a one-sentence summary of the period's performance.
+                    **Key Wins:** - List 2-3 major successes from the period. Highlight specific campaigns and metrics.
+                    **Areas for Improvement:** - List 2-3 key risks or underperforming areas. Pinpoint specific campaigns.
+                    **Actionable Recommendations:** - Provide 2-3 clear, actionable next steps.
+                `;
+                try {
+                    let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                    const payload = { contents: chatHistory };
+                    const apiKey = "AIzaSyDgRdpy4OQyqSgGu4iYuV1d1cVmQEerxoI"; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
+                    const result = await response.json();
+                    let text = 'No content generated.';
+                    if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
+                        text = result.candidates[0].content.parts[0].text;
+                    } else { throw new Error('Unexpected API response structure.'); }
+                    document.getElementById('spinner-container').style.display = 'none';
+                    document.getElementById('insights-content').innerHTML = formatResponse(text);
+                    document.getElementById('insights-content').style.display = 'block';
+                } catch (error) {
+                    console.error("Error generating insights:", error);
+                    document.getElementById('spinner-container').style.display = 'none';
+                    document.getElementById('insights-content').innerHTML = `<p class="text-red-600">Sorry, there was an error generating the insights. Please check the console for details.</p>`;
+                    document.getElementById('insights-content').style.display = 'block';
                 }
             }
-            initialize();
+            function formatResponse(text) {
+                return text
+                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+                    .replace(/\*\*(.*)\*\*/g, '<strong class="font-semibold">$1</strong>')
+                    .replace(/^- (.*)/gm, '<li class="ml-5 list-disc">$1</li>')
+                    .replace(/(<\/li>)(<li)/g, '$1\n$2') 
+                    .replace(/(\n<li)/g, '<li')
+                    .replace(/(<h3.*<\/h3>)/g, '</ul>$1<ul>') 
+                    .replace(/^<\/ul>/, '') + '</ul>';
+            }
         });
     </script>
 
