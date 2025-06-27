@@ -415,7 +415,7 @@
                         const stop = periodData.map(r => r['Stop Doing']).filter(Boolean).map(n => `• ${n}`).join('\n');
                         const observe = periodData.map(r => r['Observe']).filter(Boolean).map(n => `• ${n}`).join('\n');
                         const keep = periodData.map(r => r['Keep Doing']).filter(Boolean).map(n => `• ${n}`).join('\n');
-                        return { 'Stop Doing': stop, 'Observe': observe, 'Keep Doing': keep };
+                        return { stop, observe, keep };
                     };
                     const perfMarketing = processMarketingForPeriod(marketingData, perfPeriod);
                     const compMarketing = processMarketingForPeriod(marketingData, compPeriod);
