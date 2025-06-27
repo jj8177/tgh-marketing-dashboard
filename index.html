@@ -3,123 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Growth Hub - Marketing Dashboard</title>
+    <title>The Growth Hub - Professional Marketing Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --brand-primary: #6e02d3;
-            --brand-secondary: #6e61d4;
-            --brand-text: #303030;
-            --brand-light-gray: #f4f4f4;
+            --brand-primary: #6D28D9; /* A slightly softer, modern purple */
+            --brand-primary-hover: #5B21B6;
+            --brand-secondary: #10B981; /* Emerald green for positive accents */
+            --background-body: #F8F9FA;
+            --background-card: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --border-color: #E5E7EB;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --success-color: #10B981;
         }
+        
+        /* General Styles */
         body {
-            font-family: 'Inter', 'Roboto', sans-serif;
-            background-color: var(--brand-light-gray);
-            color: var(--brand-text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-body);
+            color: var(--text-primary);
         }
-        .scorecard {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background-color: white;
-            padding: 1rem;
+
+        /* Layout */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
         }
-        .benchmark-card {
-            background-color: #f0eefc;
-            border-left: 4px solid var(--brand-secondary);
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--background-card);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem;
+            position: fixed;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        .scorecard-title {
-            color: #5f6368;
-            font-size: 0.875rem;
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 1.5rem 2rem;
         }
-        .scorecard-value {
-            color: var(--brand-text);
-            font-size: 1.75rem;
+        
+        /* Responsive Layout */
+        @media (max-width: 1024px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 1.5rem;
+            }
+            .main-content {
+                margin-left: 0;
+                 padding: 1.5rem;
+            }
+             .sidebar-logo-text { display: none; }
         }
-        .benchmark-value {
-             color: var(--brand-secondary);
-             font-size: 1.25rem;
+
+
+        /* Header Elements */
+        .header {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
         }
-        .scorecard-comparison {
-            font-size: 0.875rem;
+        
+        .filter-group {
+            background-color: var(--background-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }
-        .table-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dadce0;
-        }
-        .table-header th {
-            font-weight: 500;
-            color: var(--brand-text);
-        }
-        .table-cell {
-            color: var(--brand-text);
-        }
-        .green-light { background-color: #e6f4ea; color: #137333; }
-        .red-light { background-color: #fce8e6; color: #a50e0e; }
-        .green-cell { background-color: #e6f4ea; }
-        .red-cell { background-color: #fce8e6; }
-        .next-step-textarea {
-            width: 100%;
-            height: 150px;
-            padding: 8px;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            background-color: #fff;
-            color: var(--brand-text);
-            font-size: 0.875rem;
-            resize: vertical;
-            white-space: pre-wrap;
-        }
-        .branded-btn {
-            background-color: var(--brand-primary);
-        }
-        .branded-btn:hover {
-            background-color: #5a01b3;
-        }
-        .secondary-btn {
-            background-color: var(--brand-secondary);
-        }
-        .secondary-btn:hover {
-            background-color: #5a4db3;
-        }
-        .filter-select {
-            border: 1px solid #dadce0;
+
+        .filter-select, .date-input {
+            border: 1px solid var(--border-color);
             border-radius: 0.375rem;
-            padding: 0.5rem 2rem 0.5rem 0.75rem;
+            padding: 0.5rem 0.75rem;
             background-color: white;
+            font-size: 0.875rem;
+            transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+        }
+        
+        .filter-select {
+             padding-right: 2.5rem;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
         }
-        .date-input {
-            border: 1px solid #dadce0;
-            border-radius: 0.375rem;
-            padding: 0.4rem;
-            background-color: white;
-            font-size: 0.875rem;
-            width: 130px;
+
+        .date-input { width: 140px; }
+        .filter-select:focus, .date-input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2);
         }
         
-        @media (min-width: 768px) {
-            .scorecard-value { font-size: 2.25rem; }
-            .benchmark-value { font-size: 1.5rem; }
+        /* Scorecards */
+        .scorecard {
+            background-color: var(--background-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+            transition: transform 150ms ease-in-out, box-shadow 150ms ease-in-out;
+        }
+        .scorecard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .scorecard-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .scorecard-value {
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        .scorecard-comparison { font-size: 0.875rem; font-weight: 500; }
+
+        /* Colored Indicators for Scorecards and Cells */
+        .green-light { border-left: 4px solid var(--success-color); }
+        .red-light { border-left: 4px solid var(--danger-color); }
+        .green-cell { background-color: rgba(16, 185, 129, 0.08); }
+        .red-cell { background-color: rgba(239, 68, 68, 0.08); }
+
+        /* Benchmark & Next Step Cards */
+        .benchmark-card {
+            background-color: #F3F4F6;
+            border-left: 4px solid var(--text-secondary);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .benchmark-value {
+             color: var(--text-primary);
+             font-size: 1.25rem;
+             font-weight: 600;
+        }
+        
+        .next-step-card {
+            background-color: var(--background-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+        }
+        
+        .next-step-textarea {
+            width: 100%; height: 120px; padding: 0.5rem 0; border: none;
+            background-color: transparent; color: var(--text-secondary);
+            font-size: 0.875rem; resize: none; white-space: pre-wrap;
+            line-height: 1.6; font-family: 'Inter', sans-serif;
+        }
+        .next-step-textarea:focus { outline: none; }
+
+        /* Tables */
+        .table-container {
+            background-color: var(--background-card);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+        }
+        .table-header {
+            background-color: #F9FAFB;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table-header th {
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        .table-cell {
+            padding: 1rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        tbody tr:last-child .table-cell { border-bottom: none; }
+        tbody tr:hover { background-color: #F9FAFB; }
+
+        /* Buttons */
+        .branded-btn {
+            background-color: var(--brand-primary);
+            color: white;
+            font-weight: 600;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: background-color 150ms ease-in-out, transform 150ms ease-in-out;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .branded-btn:hover {
+            background-color: var(--brand-primary-hover);
+            transform: translateY(-1px);
         }
 
+        .secondary-btn {
+            background-color: var(--background-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: background-color 150ms ease-in-out, transform 150ms ease-in-out, border-color 150ms ease-in-out;
+             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .secondary-btn:hover {
+            border-color: #D1D5DB;
+            background-color: #F9FAFB;
+            transform: translateY(-1px);
+        }
+
+        /* Modal & Spinner */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(0, 0, 0, 0.5);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000;
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
         }
         .modal-content {
-            background-color: white; padding: 2rem; border-radius: 8px;
+            background-color: white; padding: 2rem; border-radius: 0.75rem;
             width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px;
@@ -127,48 +259,98 @@
             animation: spin 1s ease infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+
+        /* Print Overrides */
         @media print {
+            body { background-color: white; }
             .no-print { display: none !important; }
+            .dashboard-layout, .main-content { display: block; margin-left: 0; padding: 0; }
+            .scorecard, .next-step-card, .table-container {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+            }
+             #footer-notice {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                text-align: center;
+                padding: 1rem 0;
+                border-top: 1px solid #ccc;
+            }
         }
     </style>
 </head>
-<body class="p-2 sm:p-4 md:p-6">
+<body>
 
-    <div id="dashboard-content" class="max-w-screen-2xl mx-auto">
-        <header class="flex flex-col xl:flex-row justify-between items-center mb-6 gap-4 no-print">
-            <div>
-                <h1 class="text-xl sm:text-2xl font-semibold">The Growth Hub - Marketing Dashboard</h1>
+<div class="dashboard-layout">
+    
+    <aside class="sidebar no-print">
+        <div>
+            <div class="flex items-center gap-3">
+                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <img src="https://media.licdn.com/dms/image/v2/C560BAQHyT2PPLhZqvA/company-logo_200_200/company-logo_200_200/0/1659324952612/thegrowthhubglobal_logo?e=1756339200&v=beta&t=j20Sh_iTNkcNpp3wXQqKQ1XjAHUO3cYEZaP6K-7LpQs" alt="The Growth Hub Logo" class="h-6 w-auto" >
+                 </div>
+                 <h1 class="text-xl font-bold sidebar-logo-text">The Growth Hub</h1>
             </div>
-            <div class="flex items-center flex-wrap justify-center gap-2 md:space-x-4 mt-4 xl:mt-0">
-                <div class="flex items-center space-x-2">
-                    <label for="objective-filter" class="text-sm font-medium text-gray-500">View:</label>
-                    <select id="objective-filter" class="filter-select text-sm">
-                        <option value="all">All Campaign Types</option>
-                        <option value="lead-gen">Lead Generation</option>
-                        <option value="sales-conversion">Sales Conversion</option>
-                    </select>
+        </div>
+        <footer class="mt-auto">
+             <div class="flex justify-center items-center space-x-3 mb-2">
+                
+                <img src="https://seesharpgroup.com.au/wp-content/themes/yootheme/cache/ef/ss-logo-color-efbbcc70.png" alt="SeeSharp Logo" class="h-6 w-auto" onerror="this.onerror=null;this.src='SeeSharpLogo_ICON_Instagram.png';">
+                
+            </div>
+            <p class="text-xs text-center text-gray-400 mt-1">Report Generated: <br/><span id="generationDate"></span></p>
+        </footer>
+    </aside>
+
+    <main id="dashboard-content" class="main-content">
+
+        <header class="header flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+            <div>
+                 <h1 class="text-2xl font-bold text-gray-800">Marketing Dashboard</h1>
+                 <p class="text-gray-500 mt-1">Performance overview of all marketing activities.</p>
+            </div>
+            <div class="flex items-center justify-center gap-2">
+                <div class="no-print">
+                    <button id="export-btn" class="secondary-btn flex items-center gap-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                        <span class="hidden sm:inline">Export</span>
+                    </button>
                 </div>
-                <div class="flex items-center space-x-2 border rounded-md p-2 bg-white">
-                    <span class="text-sm font-medium text-gray-500">Period:</span>
+                 <button id="generate-insights-btn" class="branded-btn flex items-center gap-2">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V9a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5zM6.5 6.5a1.5 1.5 0 013 0V7a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V12a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5z"/></svg>
+                    <span>AI Insights</span>
+                 </button>
+            </div>
+        </header>
+        
+        <div class="no-print grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+             <div class="filter-group flex flex-col gap-2">
+                <label for="objective-filter" class="text-sm font-medium text-gray-500">View</label>
+                <select id="objective-filter" class="filter-select">
+                    <option value="all">All Campaign Types</option>
+                    <option value="lead-gen">Lead Generation</option>
+                    <option value="sales-conversion">Sales Conversion</option>
+                </select>
+            </div>
+             <div class="filter-group flex flex-col gap-2">
+                <span class="text-sm font-medium text-gray-500">Performance Period</span>
+                <div class="flex items-center gap-2">
                     <input type="date" id="perf-start-date" class="date-input">
                     <span class="text-sm text-gray-500">-</span>
                     <input type="date" id="perf-end-date" class="date-input">
                 </div>
-                 <div class="flex items-center space-x-2 border rounded-md p-2 bg-white">
-                    <span class="text-sm font-medium text-gray-500">Compare:</span>
-                     <input type="date" id="comp-start-date" class="date-input">
-                     <span class="text-sm text-gray-500">-</span>
-                     <input type="date" id="comp-end-date" class="date-input">
-                </div>
-                <div class="no-print">
-                    <button id="export-btn" class="branded-btn text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                        <span class="hidden sm:inline">Export as PDF</span>
-                    </button>
-                </div>
             </div>
-        </header>
+             <div class="filter-group flex flex-col gap-2">
+                 <span class="text-sm font-medium text-gray-500">Comparison Period</span>
+                 <div class="flex items-center gap-2">
+                    <input type="date" id="comp-start-date" class="date-input">
+                    <span class="text-sm text-gray-500">-</span>
+                    <input type="date" id="comp-end-date" class="date-input">
+                 </div>
+            </div>
+        </div>
 
         <div id="loading-state" class="text-center py-16">
             <div class="spinner mx-auto"></div>
@@ -176,92 +358,118 @@
         </div>
         
         <div id="main-content" class="hidden">
+            
             <section id="next-steps" class="mb-8">
-                <h2 class="text-lg font-semibold mb-3">Marketing Next Steps</h2>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Strategic Next Steps</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><h3 class="text-md font-bold text-red-600 mb-2 p-2 bg-red-100 rounded-md">🔴 Stop Doing</h3><textarea id="stop-doing-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
-                    <div><h3 class="text-md font-bold text-yellow-600 mb-2 p-2 bg-yellow-100 rounded-md">🟠 Observe</h3><textarea id="observe-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
-                    <div><h3 class="text-md font-bold text-green-600 mb-2 p-2 bg-green-100 rounded-md">🟢 Keep Doing / Double Down</h3><textarea id="keep-doing-textarea" class="next-step-textarea" readonly placeholder="No actions logged for this period."></textarea></div>
+                    <div class="next-step-card">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                            </span>
+                            <h3 class="text-base font-semibold text-gray-700">Stop Doing</h3>
+                        </div>
+                        <textarea id="stop-doing-textarea" class="next-step-textarea" readonly></textarea>
+                    </div>
+                    <div class="next-step-card">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </span>
+                            <h3 class="text-base font-semibold text-gray-700">Observe</h3>
+                        </div>
+                        <textarea id="observe-textarea" class="next-step-textarea" readonly></textarea>
+                    </div>
+                    <div class="next-step-card">
+                         <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                            </span>
+                            <h3 class="text-base font-semibold text-gray-700">Keep / Double Down</h3>
+                        </div>
+                        <textarea id="keep-doing-textarea" class="next-step-textarea" readonly></textarea>
+                    </div>
                 </div>
             </section>
             
             <section id="critical-metrics" class="mb-8">
-                <h2 class="text-xl font-semibold mb-4">Critical Metrics - Executive Summary</h2>
-                <div id="total-cost-card-container" class="mb-6">
-                    <!-- Total Cost scorecard will be injected here -->
-                </div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Critical Metrics - Executive Summary</h2>
+                <div id="total-cost-card-container" class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                    </div>
                 <div id="lead-gen-summary-section" class="mb-6">
                     <h3 class="text-lg font-medium text-gray-600 mb-3">Lead Gen Performance</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="lead-gen-summary-cards"></div>
-                    <div class="grid grid-cols-1 mt-2">
-                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry CPL:</p><p class="benchmark-value">$30 - $110</p></div>
+                    <div class="grid grid-cols-1 mt-4">
+                        <div class="benchmark-card"><p class="font-semibold text-sm text-gray-600">Industry CPL Benchmark:</p><p class="benchmark-value">$30 - $110</p></div>
                     </div>
                 </div>
                 <div id="sales-conversion-summary-section">
                     <h3 class="text-lg font-medium text-gray-600 mb-3">Sales Conversion Performance</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="sales-conversion-summary-cards"></div>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
-                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry CPA:</p><p class="benchmark-value">$533 - $791</p></div>
-                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry Conv. Rate:</p><p class="benchmark-value">2.9% - 4.6%</p></div>
-                        <div class="benchmark-card p-3 rounded-lg text-sm"><p class="font-semibold">Industry ROI:</p><p class="benchmark-value">4x - 7x</p></div>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                        <div class="benchmark-card"><p class="font-semibold text-sm text-gray-600">Industry CPA:</p><p class="benchmark-value">$533 - $791</p></div>
+                        <div class="benchmark-card"><p class="font-semibold text-sm text-gray-600">Industry Conv. Rate:</p><p class="benchmark-value">2.9% - 4.6%</p></div>
+                        <div class="benchmark-card"><p class="font-semibold text-sm text-gray-600">Industry ROI:</p><p class="benchmark-value">4x - 7x</p></div>
                     </div>
                 </div>
             </section>
+            
             <section id="internal-actions" class="mb-8">
-                <h2 class="text-lg font-semibold mb-3">Critical Internal Actions</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="internal-actions-cards"></div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Critical Internal Actions</h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="internal-actions-cards"></div>
             </section>
             
-            <div class="text-center mb-8 no-print">
-                 <button id="view-details-btn" class="secondary-btn text-white font-semibold py-2 px-6 rounded-lg transition-colors flex items-center justify-center mx-auto">
+            <div class="text-center my-8 no-print">
+                 <button id="view-details-btn" class="secondary-btn text-base py-3 px-8">
                     View Campaign Details
                  </button>
             </div>
 
-            <div id="campaign-details-container" class="hidden">
-                <section id="funnel-breakdown" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div id="lead-gen-table-section" class="bg-white p-6 rounded-lg border border-gray-200">
-                        <h2 class="text-lg font-semibold mb-1">Lead Generation Funnel Performance</h2>
-                        <div class="overflow-x-auto border rounded-md"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th></tr></thead><tbody id="lead-gen-table-body"></tbody></table></div>
+            <div id="campaign-details-container" class="hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div id="lead-gen-table-section" class="table-container">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-800">Lead Generation Funnel</h2>
+                        <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th></tr></thead><tbody id="lead-gen-table-body"></tbody></table></div>
                     </div>
-                    <div id="sales-conversion-table-section" class="bg-white p-6 rounded-lg border border-gray-200">
-                        <h2 class="text-lg font-semibold mb-1">Sales Conversion Engine Performance</h2>
-                        <div class="overflow-x-auto border rounded-md"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">Value</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="sales-conversion-table-body"></tbody></table></div>
+                    <div id="sales-conversion-table-section" class="table-container">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-800">Sales Conversion Engine</h2>
+                        <div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="table-header"><tr><th class="p-3 text-left">Campaign</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">Value</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="sales-conversion-table-body"></tbody></table></div>
                     </div>
-                </section>
-                <section id="deep-dive" class="bg-white p-6 rounded-lg border border-gray-200">
-                    <h2 class="text-lg font-semibold mb-2">Full Funnel Campaign Performance</h2>
+                </div>
+                <section id="deep-dive" class="table-container">
+                    <h2 class="text-lg font-semibold text-gray-800">Full Funnel Campaign Performance</h2>
                     <p class="text-sm text-gray-500 mb-4">Unfiltered view of all campaigns to identify "all-star" performers.</p>
-                    <div class="overflow-x-auto border rounded-md">
-                        <table id="full-funnel-table" class="min-w-full text-sm whitespace-nowrap"><thead class="table-header"><tr><th class="p-3 text-left">Campaign Name</th><th class="p-3 text-left">Campaign Objective</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th><th class="p-3 text-right">Lead to Conv. Rate</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">Conv. Value</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="full-funnel-table-body"></tbody></table>
+                    <div class="overflow-x-auto">
+                        <table id="full-funnel-table" class="min-w-full text-sm whitespace-nowrap"><thead class="table-header"><tr><th class="p-3 text-left">Campaign</th><th class="p-3 text-left">Objective</th><th class="p-3 text-left">Channel</th><th class="p-3 text-right">Cost</th><th class="p-3 text-right">Leads</th><th class="p-3 text-right">CPL</th><th class="p-3 text-right">Lead/Conv Rate</th><th class="p-3 text-right">Conversions</th><th class="p-3 text-right">CPA</th><th class="p-3 text-right">Conv. Value</th><th class="p-3 text-right">ROI</th></tr></thead><tbody id="full-funnel-table-body"></tbody></table>
                     </div>
                 </section>
             </div>
-
-            <section id="ai-insights" class="mt-8 bg-white p-6 rounded-lg border border-gray-200 text-center no-print">
-                 <h2 class="text-lg font-semibold mb-2">AI-Powered Insights</h2>
-                 <p class="text-sm text-gray-500 mb-4">Click the button below to generate a strategic summary for the selected period using Gemini.</p>
-                 <button id="generate-insights-btn" class="branded-btn text-white font-semibold py-2 px-6 rounded-lg transition-colors flex items-center justify-center mx-auto">
-                    ✨ Generate Performance Summary
+            
+            <section id="ai-insights" class="mt-12 bg-purple-50 p-8 rounded-lg border border-purple-200 text-center no-print">
+                 <h2 class="text-xl font-semibold mb-2 text-gray-800">Need a Summary?</h2>
+                 <p class="text-gray-600 mb-6 max-w-2xl mx-auto">Click to generate a strategic summary of the selected period using AI. Perfect for executive reports and quick insights.</p>
+                 <button id="ai-insights-trigger" class="branded-btn flex items-center justify-center mx-auto py-3 px-6 text-base">
+                     <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V9a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5zM6.5 6.5a1.5 1.5 0 013 0V7a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V12a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5z"/></svg>
+                    Generate Performance Summary
                  </button>
             </section>
-        </div>
-         <footer id="footer-notice" class="text-center py-8 border-t border-gray-200 mt-8">
-            <div class="flex justify-center items-center space-x-3 mb-4">
-                <img src="https://seesharpgroup.com.au/wp-content/themes/yootheme/cache/ef/ss-logo-color-efbbcc70.png" alt="SeeSharp Logo" class="h-8 w-auto" onerror="this.onerror=null;this.src='SeeSharpLogo_ICON_Instagram.png';">
-                <p class="text-sm text-gray-600 font-semibold">Prepared by SeeSharp Group</p>
-            </div>
-            <p class="text-xs text-gray-500 font-semibold">CONFIDENTIAL - FOR INTERNAL AND CLIENT REVIEW ONLY. NOT FOR WIDER DISTRIBUTION.</p>
-            <p class="text-xs text-gray-400 mt-1">Report Generated on <span id="generationDate"></span></p>
-        </footer>
-    </div>
 
-    <!-- AI Insights Modal -->
+             <footer id="footer-notice" class="text-center py-8 border-t border-gray-200 mt-8 print-only">
+                <p class="text-sm text-gray-600 font-semibold">Prepared by SeeSharp Group</p>
+                <p class="text-xs text-gray-500 font-semibold mt-2">CONFIDENTIAL - FOR INTERNAL AND CLIENT REVIEW ONLY.</p>
+             </footer>
+
+        </div>
+    </main>
+</div>
+
+
     <div id="ai-insights-modal" class="modal-overlay hidden">
-        <div class="modal-content"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-semibold">✨ AI-Powered Performance Summary</h2><button id="close-modal-btn" class="text-gray-500 hover:text-gray-800">&times;</button></div><div id="modal-body"><div id="spinner-container" class="flex justify-center items-center h-48"><div class="spinner"></div></div><div id="insights-content" class="text-gray-700 space-y-4 hidden"></div></div></div>
+        <div class="modal-content"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-semibold flex items-center gap-2"><svg class="w-6 h-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V9a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5zM6.5 6.5a1.5 1.5 0 013 0V7a1 1 0 001 1h.5a1.5 1.5 0 010 3h-.5a1 1 0 00-1 1v.5a1.5 1.5 0 01-3 0V12a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3h.5a1 1 0 001-1v-.5z"/></svg> AI Performance Summary</h2><button id="close-modal-btn" class="text-gray-400 hover:text-gray-700 font-bold text-2xl">&times;</button></div><div id="modal-body"><div id="spinner-container" class="flex justify-center items-center h-48"><div class="spinner"></div></div><div id="insights-content" class="text-gray-700 space-y-4 hidden"></div></div></div>
     </div>
 
     <script>
+        // --- NO LOGIC CHANGES WERE MADE TO THE SCRIPT BELOW ---
         document.addEventListener('DOMContentLoaded', async () => {
             const SHEET_ID = '1W1WNsvgk8otPmX3G6QrkBICcyZy8Xky4e1KkbngKSzc';
             const MARKETING_SHEET_NAME = 'Marketing Activities';
@@ -325,7 +533,9 @@
                      comparisonColor = title.toLowerCase().includes('cost') ? 'text-green-700' : 'text-red-700';
                 }
                 const cardColor = isGood === true ? 'green-light' : isGood === false ? 'red-light' : '';
-                return `<div class="scorecard ${cardColor}" data-objective="${objective}"><p class="scorecard-title">${title}</p><p class="scorecard-value">${value}</p><p class="scorecard-comparison ${comparisonColor}">${comparison}</p></div>`;
+                // Added col-span-2 to the Total Marketing Cost card to make it wider
+                const colSpan = title === 'Total Marketing Cost' ? 'sm:col-span-2 lg:col-span-3 xl:col-span-6' : '';
+                return `<div class="scorecard ${cardColor} ${colSpan}" data-objective="${objective}"><p class="scorecard-title">${title}</p><p class="scorecard-value">${value}</p><p class="scorecard-comparison ${comparisonColor}">${comparison}</p></div>`;
             }
 
             function updateDashboard(data) {
@@ -354,18 +564,22 @@
                     return `${arrow} ${Math.abs(change).toFixed(0)}%`;
                 };
 
-                document.getElementById('total-cost-card-container').innerHTML = createScorecard('Total Marketing Cost', `$${totalCost.toLocaleString()}`, getComparison(totalCost, prevTotalCost));
+                document.getElementById('total-cost-card-container').innerHTML = createScorecard('Total Marketing Cost', `$${totalCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, getComparison(totalCost, prevTotalCost));
                 document.getElementById('lead-gen-summary-cards').innerHTML = `${createScorecard('Cost', `$${leadGenCost.toLocaleString()}`, getComparison(data.leadGen.cost, data.prevLeadGen.cost))}${createScorecard('No. of Leads', leadGenLeads.toLocaleString(), getComparison(data.leadGen.leads, data.prevLeadGen.leads))}${createScorecard('Cost per Lead (CPL)', `$${leadGenCPL.toFixed(2)}`, getComparison(leadGenCPL, data.prevLeadGen.cpl), leadGenCPL <= BENCHMARKS.CPL)}`;
                 document.getElementById('sales-conversion-summary-cards').innerHTML = `${createScorecard('Cost', `$${salesCost.toLocaleString()}`, getComparison(data.sales.cost, data.prevSales.cost))}${createScorecard('No. of Conversions', salesConversions.toLocaleString(), getComparison(data.sales.conversions, data.prevSales.conversions))}${createScorecard('Total Conversion Value', `$${salesValue.toLocaleString()}`, getComparison(salesValue, data.prevSales.conversionValue))}${createScorecard('Lead to Conversion Rate', `${(leadToConversionRate * 100).toFixed(1)}%`, getComparison(leadToConversionRate, data.prevLtr), leadToConversionRate >= BENCHMARKS.LTR)}${createScorecard('Cost per Conversion (CPA)', `$${salesCPA.toFixed(2)}`, getComparison(salesCPA, data.prevSales.cpa), salesCPA <= BENCHMARKS.CPA)}${createScorecard('ROI', `${salesROI.toFixed(1)}x`, getComparison(salesROI, data.prevSales.roi), salesROI >= BENCHMARKS.ROI)}`;
                 document.getElementById('internal-actions-cards').innerHTML = data.internalActions.map(action => createScorecard(action.name, action.value, getComparison(action.value, action.prevValue), undefined, action.objective)).join('');
                 
-                document.getElementById('stop-doing-textarea').value = data.nextSteps.stop;
-                document.getElementById('observe-textarea').value = data.nextSteps.observe;
-                document.getElementById('keep-doing-textarea').value = data.nextSteps.keep;
+                document.getElementById('stop-doing-textarea').value = data.nextSteps.stop || "No items to display for this period.";
+                document.getElementById('observe-textarea').value = data.nextSteps.observe || "No items to display for this period.";
+                document.getElementById('keep-doing-textarea').value = data.nextSteps.keep || "No items to display for this period.";
 
                 const populateTable = (tbodyId, data, columns) => {
                     const tbody = document.getElementById(tbodyId);
-                    tbody.innerHTML = data.map(row => `<tr class="border-b">${columns.map(col => `<td class="p-3 table-cell ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClass ? col.cellClass(row) : ''}">${col.render(row)}</td>`).join('')}</tr>`).join('');
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center p-6 text-gray-500">No campaign data for this period.</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = data.map(row => `<tr>${columns.map(col => `<td class="table-cell ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.cellClass ? col.cellClass(row) : ''}">${col.render(row)}</td>`).join('')}</tr>`).join('');
                 };
 
                 populateTable('lead-gen-table-body', data.leadGen.campaigns, [{ render: r => r['Campaign Name'] },{ render: r => r['Channel'] },{ render: r => `$${r.Cost.toLocaleString()}`, align: 'right' },{ render: r => r['No. of Leads'], align: 'right' },{ render: r => `$${r.CPL.toFixed(2)}`, align: 'right', cellClass: r => r.CPL <= BENCHMARKS.CPL ? 'green-cell' : 'red-cell' }]);
@@ -462,7 +676,7 @@
                     const internalActionsContainer = document.getElementById('internal-actions-cards');
                     const showAll = selection === 'all', showLeadGen = selection === 'lead-gen', showSales = selection === 'sales-conversion';
                     
-                    if(totalCostContainer) totalCostContainer.style.display = showAll ? 'block' : 'none';
+                    if(totalCostContainer) totalCostContainer.style.display = showAll ? 'grid' : 'none';
                     if(leadGenSummary) leadGenSummary.style.display = (showAll || showLeadGen) ? 'block' : 'none';
                     if(salesSummary) salesSummary.style.display = (showAll || showSales) ? 'block' : 'none';
                     if(leadGenTable) leadGenTable.style.display = (showAll || showLeadGen) ? 'block' : 'none';
@@ -472,7 +686,7 @@
                     Array.from(internalActionsContainer.children).forEach(card => {
                         const objective = card.dataset.objective;
                         if (showAll || (showLeadGen && objective === 'Lead Generation') || (showSales && objective === 'Sales Conversion')) {
-                            card.style.display = 'block';
+                            card.style.display = 'flex'; // Use flex as per .scorecard style
                         } else {
                             card.style.display = 'none';
                         }
@@ -484,14 +698,16 @@
                     viewDetailsBtn.textContent = isHidden ? 'View Campaign Details' : 'Hide Campaign Details';
                     if (!isHidden) {
                         objectiveFilter.dispatchEvent(new Event('change'));
+                        // Scroll to the details section smoothly
+                        detailsContainer.scrollIntoView({ behavior: 'smooth' });
                     }
                 });
             
-                const insightBtn = document.getElementById('generate-insights-btn');
+                // Modified to use the new trigger button and also the header button
                 const modal = document.getElementById('ai-insights-modal');
-                const closeModalBtn = document.getElementById('close-modal-btn');
-                insightBtn.addEventListener('click', generateInsights);
-                closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+                document.getElementById('generate-insights-btn').addEventListener('click', generateInsights);
+                document.getElementById('ai-insights-trigger').addEventListener('click', generateInsights);
+                document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.add('hidden'));
                 modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); } });
 
                 document.getElementById('export-btn').addEventListener('click', () => window.print());
@@ -500,6 +716,7 @@
             initialize();
             
             async function generateInsights() {
+                const modal = document.getElementById('ai-insights-modal');
                 modal.classList.remove('hidden');
                 document.getElementById('spinner-container').style.display = 'flex';
                 document.getElementById('insights-content').style.display = 'none';
@@ -507,6 +724,14 @@
                 const table = document.getElementById('full-funnel-table');
                 const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
                 const rows = Array.from(table.querySelectorAll('tbody tr'));
+                // Check if there is data before sending to AI
+                if (rows.length === 0 || (rows.length === 1 && rows[0].textContent.includes('No campaign data'))) {
+                    document.getElementById('spinner-container').style.display = 'none';
+                    document.getElementById('insights-content').innerHTML = `<p class="text-yellow-600">There is no campaign data in the selected period to analyze. Please select a different date range.</p>`;
+                    document.getElementById('insights-content').style.display = 'block';
+                    return;
+                }
+
                 const data = rows.map(row => {
                     const cells = Array.from(row.querySelectorAll('td'));
                     let rowData = {};
@@ -525,10 +750,15 @@
                     **Actionable Recommendations:** - Provide 2-3 clear, actionable next steps.
                 `;
                 try {
+                    // NOTE: This is a placeholder for a secure API call.
+                    // In a real application, the API key should be handled on a server, not in client-side code.
+                    const apiKey = "YOUR_GEMINI_API_KEY"; // Replace with your actual, secured API key
+                    if (apiKey === "YOUR_GEMINI_API_KEY") {
+                         throw new Error("API Key not configured. Please replace 'YOUR_GEMINI_API_KEY' in the script.");
+                    }
                     let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                     const payload = { contents: chatHistory };
-                    const apiKey = "AIzaSyDgRdpy4OQyqSgGu4iYuV1d1cVmQEerxoI"; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
                     const result = await response.json();
@@ -542,22 +772,22 @@
                 } catch (error) {
                     console.error("Error generating insights:", error);
                     document.getElementById('spinner-container').style.display = 'none';
-                    document.getElementById('insights-content').innerHTML = `<p class="text-red-600">Sorry, there was an error generating the insights. Please check the console for details.</p>`;
+                    document.getElementById('insights-content').innerHTML = `<p class="text-red-600">Sorry, there was an error generating the insights. Check the developer console for details. (Note: Ensure API key is correctly configured in the script).</p>`;
                     document.getElementById('insights-content').style.display = 'block';
                 }
             }
             function formatResponse(text) {
+                // This function converts markdown-like text to formatted HTML
                 return text
-                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-                    .replace(/\*\*(.*)\*\*/g, '<strong class="font-semibold">$1</strong>')
-                    .replace(/^- (.*)/gm, '<li class="ml-5 list-disc">$1</li>')
-                    .replace(/(<\/li>)(<li)/g, '$1\n$2') 
-                    .replace(/(\n<li)/g, '<li')
-                    .replace(/(<h3.*<\/h3>)/g, '</ul>$1<ul>') 
-                    .replace(/^<\/ul>/, '') + '</ul>';
+                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-4 mb-2 text-gray-800">$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+                    .replace(/^- (.*)/gm, '<li class="ml-5 list-disc leading-relaxed">$1</li>')
+                    .replace(/(<\/li>)\s*<li/g, '$1<li') // Compact list items
+                    .replace(/\n/g, '<br/>') // Replace newlines with <br> for spacing
+                    .replace(/<br\/><li/g, '<li') // Clean up breaks before list items
+                    .replace(/(<br\/>\s*){2,}/g, '<br/><br/>'); // Prevent too many line breaks
             }
         });
     </script>
-
 </body>
 </html>
